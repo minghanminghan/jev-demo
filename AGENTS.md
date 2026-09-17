@@ -25,6 +25,11 @@ somewhere other than a browser. Everything else still runs in the tab.
   If you change either path, change it in both `lib/types.ts`
   (`JEV_PROXY_PATH`, `LLM_PROXY_PATH`, `LLM_TARGET_HEADER`) and the folder name
   under `app/api/`.
+- The app is served under **`/jev-demo`**, not at a host root. `lib/base-path.ts`
+  holds the prefix; `next.config.ts` feeds it to `basePath` and `lib/types.ts`
+  puts it on the front of both proxy paths, because `basePath` does not touch a
+  hand-written `fetch`. The personal site rewrites `/jev-demo/*` through to this
+  project, so a URL without the prefix lands on the site instead of here.
 - Both routes are relays: they attach whatever key the caller sends to a
   request the server makes. A deployed copy needs Vercel Deployment Protection
   or equivalent in front of it. See the README.

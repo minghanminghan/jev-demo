@@ -1,5 +1,7 @@
 import type { NextConfig } from "next";
 
+import { BASE_PATH } from "./lib/base-path";
+
 /**
  * Deliberately almost empty.
  *
@@ -20,6 +22,12 @@ const nextConfig: NextConfig = {
   // is an uncommitted change that comes back however often it is deleted.
   // Off, and AGENTS.md stays the one a human wrote.
   agentRules: false,
+
+  // The app is reached through the personal site, which rewrites
+  // `/jev-demo/*` here. `basePath` is what makes the pages and the `/_next/*`
+  // asset URLs carry that prefix; without it every asset request goes to the
+  // site root and 404s. See lib/base-path.ts.
+  basePath: BASE_PATH,
 };
 
 export default nextConfig;

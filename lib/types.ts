@@ -1,3 +1,4 @@
+import { BASE_PATH } from "./base-path";
 import type { Recipe } from "./automations/recipe";
 
 /**
@@ -31,8 +32,11 @@ export const FRUSTRATION_LEVELS = [
  * sends no CORS header, so the browser would refuse the request. This path is
  * proxied straight through to it — by Vite in dev (see vite.config.ts), and by
  * one rewrite rule on whatever serves the built files.
+ *
+ * `BASE_PATH` is on the front because the app is mounted under a prefix and
+ * `basePath` does not touch a hand-written `fetch`.
  */
-export const JEV_PROXY_PATH = "/api/jev";
+export const JEV_PROXY_PATH = `${BASE_PATH}/api/jev`;
 
 /**
  * Where the LLM side of the comparison sends its calls, for the same reason:
@@ -42,7 +46,7 @@ export const JEV_PROXY_PATH = "/api/jev";
  *
  * Keep it the same as the path in vite.config.ts.
  */
-export const LLM_PROXY_PATH = "/api/llm";
+export const LLM_PROXY_PATH = `${BASE_PATH}/api/llm`;
 
 /**
  * The header the pass-through reads the real endpoint off.
