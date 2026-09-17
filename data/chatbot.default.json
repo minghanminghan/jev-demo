@@ -1,0 +1,213 @@
+{
+  "model": "jev-latest",
+  "thresholds": {
+    "node": 0.5,
+    "escalation": 0.6,
+    "frustration": 0.85
+  },
+  "prompts": {
+    "classify": "Which category best matches {path}? Judge the latest customer message; earlier turns are context only.",
+    "escalation": "The customer is asking to talk to a human agent, or is frustrated enough that a human should take over.",
+    "frustration": "How frustrated is this customer? Judge the latest message, with earlier turns as context.",
+    "other": "None of the other options fit the customer's latest message, or the message is too vague to place."
+  },
+  "escalationReply": "Let me hand this to a live agent. I have passed along our conversation so far, so you will not have to repeat yourself.",
+  "clarifyReply": "I'm not sure I follow yet. Can you say a bit more about what you were doing and what went wrong?",
+  "maxClarifications": 1,
+  "historyTurns": 4,
+  "maxDepth": 3,
+  "root": {
+    "id": "initial-message",
+    "name": "initial_message",
+    "label": "",
+    "response": "Hi! I'm the support bot. Tell me what's going on and I'll point you to the right place.",
+    "escalate": false,
+    "children": [
+      {
+        "id": "i_account",
+        "name": "account",
+        "label": "Sign-in, passwords, MFA, profile details, team members, roles and permissions, or closing an account. Not about money.",
+        "response": "Happy to help with your account. Is this about signing in, your profile details, or closing the account?",
+        "escalate": false,
+        "children": [
+          {
+            "id": "s_login",
+            "name": "login_access",
+            "label": "Cannot sign in, locked out, password reset, MFA or SSO trouble.",
+            "response": "Let's get you back in. Do you want a one-time code, a password reset, or should I pull in a person?",
+            "escalate": false,
+            "children": [
+              {
+                "id": "s_otp",
+                "name": "request_otp",
+                "label": "Wants a one-time code or a sign-in link, or the code that was sent never arrived.",
+                "response": "Done — a fresh sign-in code is on its way to {{account.emailOnFile}}. It lands in under a minute and works for 10 minutes. Check spam if you do not see it.",
+                "escalate": false,
+                "automation": "resend_otp",
+                "children": []
+              },
+              {
+                "id": "s_reset_pw",
+                "name": "reset_password",
+                "label": "Forgot the password, the password is rejected, or wants to set a new one.",
+                "response": "Sent — the reset link is in your inbox at {{account.emailOnFile}}. It works until {{account.lastPasswordReset.linkExpiresAt}}. Open it and choose a new password.",
+                "escalate": false,
+                "automation": "send_reset_link",
+                "children": []
+              },
+              {
+                "id": "s_login_agent",
+                "name": "live_agent",
+                "label": "Locked out in a way self-serve cannot fix: no access to the email on file, MFA backup codes lost, a disabled account, or suspected fraud.",
+                "response": "",
+                "escalate": true,
+                "children": []
+              }
+            ]
+          },
+          {
+            "id": "s_profile",
+            "name": "profile_settings",
+            "label": "Change name, email, notification settings or other profile fields.",
+            "response": "You are {{account.name}} ({{account.emailOnFile}}, {{emailState}}), {{account.role}} of {{account.org}}. Notifications: {{notificationFlags}}. Change any of it under Settings > Profile — a new email needs a confirmation click in the message we send there.",
+            "escalate": false,
+            "automation": "profile_overview",
+            "children": []
+          },
+          {
+            "id": "s_close",
+            "name": "close_account",
+            "label": "Delete the account, export data, or leave the product for good.",
+            "response": "I started the data export for {{account.org}}. It is ready by {{account.dataExport.readyAt}} at {{account.dataExport.url}}. Closing the account comes after that, and it cannot be undone — tell me when you want to take that step.",
+            "escalate": false,
+            "automation": "start_data_export",
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "i_subscription",
+        "name": "subscription",
+        "label": "Plans, pricing, upgrades, downgrades, renewals, invoices, payment methods, charges and refunds. Anything about money.",
+        "response": "Let's sort out your plan. Is it about changing the plan, cancelling, an invoice, or a payment?",
+        "escalate": false,
+        "children": [
+          {
+            "id": "s_plan",
+            "name": "change_plan",
+            "label": "Upgrade, downgrade, compare plans, add or remove seats.",
+            "response": "You are on {{subscription.plan}} at {{subscription.pricePerSeat}} a seat, {{seatUsage}}, which bills {{subscription.monthlyTotal}} a month and renews {{subscription.renewsOn}}. The plans are {{allPlans}}. Switch under Billing > Plan: upgrades apply now and are prorated, downgrades at the next renewal.",
+            "escalate": false,
+            "automation": "plan_overview",
+            "children": []
+          },
+          {
+            "id": "s_cancel",
+            "name": "cancel",
+            "label": "Cancel the subscription, stop auto-renew, or pause the plan.",
+            "response": "Sorry to see you go. Do you want to cancel it yourself, or talk to someone first?",
+            "escalate": false,
+            "children": [
+              {
+                "id": "s_cancel_self",
+                "name": "cancel_self_serve",
+                "label": "Just wants to stop the plan or turn off auto-renew, and can do it in the product.",
+                "response": "Cancel under Billing > Plan > Cancel. Auto-renew is currently {{subscription.autoRenew}} for your {{subscription.billingPeriod}} {{subscription.plan}} plan, so you keep access until {{subscription.renewsOn}} — you have already paid for that time.",
+                "escalate": false,
+                "automation": "cancel_terms",
+                "children": []
+              },
+              {
+                "id": "s_cancel_agent",
+                "name": "live_agent",
+                "label": "The cancellation needs a person: a refund, a contract or annual deal, a dispute, or the customer is unhappy and asking for someone.",
+                "response": "",
+                "escalate": true,
+                "children": []
+              }
+            ]
+          },
+          {
+            "id": "s_invoice",
+            "name": "invoice_receipt",
+            "label": "Find an invoice or receipt, fix tax or company details on it.",
+            "response": "You have {{invoiceCount}} under Billing > History. The latest is {{latestInvoice}}. They are billed to {{subscription.billingDetails.companyName}}, tax ID {{subscription.billingDetails.taxId}}. You can edit those details there and download any PDF again.",
+            "escalate": false,
+            "automation": "invoice_overview",
+            "children": []
+          },
+          {
+            "id": "s_payment",
+            "name": "payment_problem",
+            "label": "Card declined, failed payment, double charge, or a refund request.",
+            "response": "Let's fix the payment. Is it a card that needs updating, or something a person should look at?",
+            "escalate": false,
+            "children": [
+              {
+                "id": "s_pay_card",
+                "name": "update_card",
+                "label": "A card was declined or has expired, and the customer wants to fix the payment method and retry.",
+                "response": "Retry queued on {{failedInvoice}} with the {{cardLabel}}. Billing > History updates within a few minutes.",
+                "escalate": false,
+                "automation": "retry_invoice",
+                "children": []
+              },
+              {
+                "id": "s_pay_agent",
+                "name": "live_agent",
+                "label": "The money question needs a person: a refund, a double charge, a disputed amount, or an invoice that cannot be paid online.",
+                "response": "",
+                "escalate": true,
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "i_technical",
+        "name": "technical",
+        "label": "The product is broken, slow, throwing errors, or the user needs help using a feature or the API. Not about money or account access.",
+        "response": "Let's dig into it. Do you need the docs, a common fix, or should I file a bug?",
+        "escalate": false,
+        "children": [
+          {
+            "id": "s_docs",
+            "name": "see_docs",
+            "label": "Asks how a feature or the API works, wants a guide or an example.",
+            "response": "The docs are at /docs, and the API reference with copy-paste examples is at /docs/api. You are on {{technical.sdk}} — {{versionNote}}.",
+            "escalate": false,
+            "automation": "sdk_versions",
+            "children": []
+          },
+          {
+            "id": "s_trouble",
+            "name": "troubleshoot_common",
+            "label": "A known or common problem: sync stuck, upload fails, slow page.",
+            "response": "I can see it: {{syncNote}} {{incidentNote}} Three things usually clear it: sign out and back in, clear the site cache, then retry the action. Storage is {{storageUsage}} in {{technical.region}}.",
+            "escalate": false,
+            "automation": "sync_health",
+            "children": []
+          },
+          {
+            "id": "s_bug",
+            "name": "report_bug",
+            "label": "Reports something clearly broken or wrong that needs engineering.",
+            "response": "Filed {{ticket}} for you: {{technical.lastError.message}}. I attached {{technical.browser}}, {{technical.sdk}} and request id {{technical.lastError.requestId}}. Engineering picks it up from there.",
+            "escalate": false,
+            "automation": "file_bug",
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "i_live_agent",
+        "name": "live_agent",
+        "label": "Explicitly asks for a human, a real person, an agent, or a manager, or says the bot is not helping. Also legal and security matters.",
+        "response": "Let me connect you with an agent.",
+        "escalate": true,
+        "children": []
+      }
+    ]
+  }
+}

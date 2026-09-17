@@ -1,18 +1,25 @@
-import { defineConfig, globalIgnores } from "eslint/config";
-import nextVitals from "eslint-config-next/core-web-vitals";
-import nextTs from "eslint-config-next/typescript";
+import js from "@eslint/js";
+import reactHooks from "eslint-plugin-react-hooks";
+import globals from "globals";
+import tseslint from "typescript-eslint";
 
-const eslintConfig = defineConfig([
-  ...nextVitals,
-  ...nextTs,
-  // Override default ignores of eslint-config-next.
-  globalIgnores([
-    // Default ignores of eslint-config-next:
-    ".next/**",
-    "out/**",
-    "build/**",
-    "next-env.d.ts",
-  ]),
-]);
-
-export default eslintConfig;
+export default tseslint.config(
+  { ignores: [".next/**", "next-env.d.ts"] },
+  js.configs.recommended,
+  tseslint.configs.recommended,
+  {
+    files: ["**/*.{ts,tsx}"],
+    languageOptions: { globals: globals.browser },
+    // The plugin still ships its configs in the old shape, so the rules are
+    // lifted out and the plugin is registered by hand.
+    plugins: { "react-hooks": reactHooks },
+    rules: reactHooks.configs["recommended-latest"].rules,
+  },
+  {
+    // The things here that run in Node rather than in the tab: the build
+    // config, the snapshot script, and the two API routes. Everything else is
+    // browser-only and stays that way. See AGENTS.md.
+    files: ["next.config.ts", "scripts/**/*.mjs", "app/api/**/*.ts"],
+    languageOptions: { globals: { ...globals.node, ...globals.browser } },
+  },
+);

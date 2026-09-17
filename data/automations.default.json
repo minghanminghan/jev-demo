@@ -1,0 +1,500 @@
+[
+  {
+    "id": "profile_overview",
+    "title": "Profile — name, email and notification flags",
+    "kind": "readOnly",
+    "reads": [
+      {
+        "path": "account.name",
+        "format": "raw"
+      },
+      {
+        "path": "account.emailOnFile",
+        "format": "raw"
+      },
+      {
+        "path": "account.org",
+        "format": "raw"
+      },
+      {
+        "path": "account.role",
+        "format": "words"
+      },
+      {
+        "path": "account.notifications.productUpdates",
+        "format": "onOff"
+      },
+      {
+        "path": "account.notifications.billingAlerts",
+        "format": "onOff"
+      },
+      {
+        "path": "account.notifications.weeklyDigest",
+        "format": "onOff"
+      }
+    ],
+    "derive": [
+      {
+        "name": "emailState",
+        "text": "verified",
+        "when": [
+          {
+            "path": "account.emailVerified",
+            "test": "isTrue"
+          }
+        ],
+        "else": "not verified yet"
+      },
+      {
+        "name": "notificationFlags",
+        "text": "product updates {{account.notifications.productUpdates}}, billing alerts {{account.notifications.billingAlerts}} and weekly digest {{account.notifications.weeklyDigest}}"
+      }
+    ],
+    "refuse": [],
+    "writes": [],
+    "blockedReply": ""
+  },
+  {
+    "id": "plan_overview",
+    "title": "Plan — tier, seats, price and the other plans",
+    "kind": "readOnly",
+    "reads": [
+      {
+        "path": "subscription.plan",
+        "format": "raw"
+      },
+      {
+        "path": "subscription.status",
+        "format": "words"
+      },
+      {
+        "path": "subscription.pricePerSeat",
+        "format": "money"
+      },
+      {
+        "path": "subscription.monthlyTotal",
+        "format": "money"
+      },
+      {
+        "path": "subscription.renewsOn",
+        "format": "date"
+      },
+      {
+        "path": "subscription.availablePlans.0.pricePerSeat",
+        "format": "money"
+      },
+      {
+        "path": "subscription.availablePlans.1.pricePerSeat",
+        "format": "money"
+      },
+      {
+        "path": "subscription.availablePlans.2.pricePerSeat",
+        "format": "money"
+      }
+    ],
+    "derive": [
+      {
+        "name": "seatUsage",
+        "text": "{{account.seatsUsed}} of {{subscription.seats}} seats used"
+      },
+      {
+        "name": "allPlans",
+        "text": "{{subscription.availablePlans.0.name}} at {{subscription.availablePlans.0.pricePerSeat}} a seat, {{subscription.availablePlans.1.name}} at {{subscription.availablePlans.1.pricePerSeat}} a seat and {{subscription.availablePlans.2.name}} at {{subscription.availablePlans.2.pricePerSeat}} a seat"
+      }
+    ],
+    "refuse": [],
+    "writes": [],
+    "blockedReply": ""
+  },
+  {
+    "id": "cancel_terms",
+    "title": "Cancellation terms — auto-renew and the paid-up date",
+    "kind": "readOnly",
+    "reads": [
+      {
+        "path": "subscription.plan",
+        "format": "raw"
+      },
+      {
+        "path": "subscription.autoRenew",
+        "format": "onOff"
+      },
+      {
+        "path": "subscription.renewsOn",
+        "format": "date"
+      },
+      {
+        "path": "subscription.billingPeriod",
+        "format": "words"
+      }
+    ],
+    "derive": [],
+    "refuse": [],
+    "writes": [],
+    "blockedReply": ""
+  },
+  {
+    "id": "invoice_overview",
+    "title": "Invoices — the latest one and the billing details",
+    "kind": "readOnly",
+    "reads": [
+      {
+        "path": "subscription.billingDetails.companyName",
+        "format": "raw"
+      },
+      {
+        "path": "subscription.billingDetails.taxId",
+        "format": "raw"
+      },
+      {
+        "path": "subscription.invoices.0.date",
+        "format": "date"
+      },
+      {
+        "path": "subscription.invoices.0.amount",
+        "format": "money"
+      },
+      {
+        "path": "subscription.invoices.0.status",
+        "format": "words"
+      },
+      {
+        "path": "subscription.invoices.0.failureReason",
+        "format": "words"
+      }
+    ],
+    "derive": [
+      {
+        "name": "invoiceCount",
+        "text": "1 invoice",
+        "when": [
+          {
+            "path": "subscription.invoices.length",
+            "test": "equals",
+            "value": "1"
+          }
+        ],
+        "else": "{{subscription.invoices.length}} invoices"
+      },
+      {
+        "name": "latestFailure",
+        "text": " ({{subscription.invoices.0.failureReason}})",
+        "when": [
+          {
+            "path": "subscription.invoices.0.failureReason",
+            "test": "isSet"
+          }
+        ]
+      },
+      {
+        "name": "latestInvoice",
+        "text": "{{subscription.invoices.0.id}} from {{subscription.invoices.0.date}} for {{subscription.invoices.0.amount}}, {{subscription.invoices.0.status}}{{latestFailure}}",
+        "when": [
+          {
+            "path": "subscription.invoices.0.id",
+            "test": "isSet"
+          }
+        ],
+        "else": "nothing billed yet"
+      }
+    ],
+    "refuse": [],
+    "writes": [],
+    "blockedReply": ""
+  },
+  {
+    "id": "sdk_versions",
+    "title": "SDK — installed version against the latest",
+    "kind": "readOnly",
+    "reads": [
+      {
+        "path": "technical.sdk",
+        "format": "raw"
+      },
+      {
+        "path": "technical.sdkLatest",
+        "format": "raw"
+      }
+    ],
+    "derive": [
+      {
+        "name": "versionNote",
+        "text": "{{technical.sdkLatest}} is out, so the upgrade notes at /docs/upgrade are worth a look",
+        "when": [
+          {
+            "path": "technical.sdkVersion",
+            "test": "notEquals",
+            "value": "{{technical.sdkLatest}}"
+          }
+        ],
+        "else": "that is the newest release"
+      }
+    ],
+    "refuse": [],
+    "writes": [],
+    "blockedReply": ""
+  },
+  {
+    "id": "sync_health",
+    "title": "Health — sync status, live incidents and storage",
+    "kind": "readOnly",
+    "reads": [
+      {
+        "path": "technical.syncStatus",
+        "format": "words"
+      },
+      {
+        "path": "technical.region",
+        "format": "raw"
+      },
+      {
+        "path": "technical.knownIncident.status",
+        "format": "words"
+      },
+      {
+        "path": "technical.knownIncident.startedAt",
+        "format": "time"
+      }
+    ],
+    "derive": [
+      {
+        "name": "syncNote",
+        "text": "{{technical.lastError.message}} ({{technical.lastError.code}}).",
+        "when": [
+          {
+            "path": "technical.lastError.code",
+            "test": "isSet"
+          }
+        ],
+        "else": "Nothing has failed on your workspace today."
+      },
+      {
+        "name": "incidentNote",
+        "text": "We know about it: {{technical.knownIncident.id}}, {{technical.knownIncident.title}}, {{technical.knownIncident.status}} since {{technical.knownIncident.startedAt}}.",
+        "when": [
+          {
+            "path": "technical.knownIncident.affectsThisUser",
+            "test": "isTrue"
+          }
+        ],
+        "else": "There is no incident on our side right now."
+      },
+      {
+        "name": "storageUsage",
+        "text": "{{technical.storageUsedGb}} of {{technical.storageLimitGb}} GB"
+      }
+    ],
+    "refuse": [],
+    "writes": [],
+    "blockedReply": ""
+  },
+  {
+    "id": "resend_otp",
+    "title": "Send a one-time sign-in code",
+    "kind": "mutating",
+    "reads": [
+      {
+        "path": "account.emailOnFile",
+        "format": "raw"
+      },
+      {
+        "path": "account.lockExpiresAt",
+        "format": "time"
+      }
+    ],
+    "derive": [
+      {
+        "name": "lockWindow",
+        "text": " until {{account.lockExpiresAt}}",
+        "when": [
+          {
+            "path": "account.lockExpiresAt",
+            "test": "isSet"
+          }
+        ]
+      }
+    ],
+    "refuse": [
+      {
+        "when": [
+          {
+            "path": "account.lockedOut",
+            "test": "isTrue"
+          }
+        ],
+        "say": "the account is locked{{lockWindow}}, after {{account.failedSignIns}} failed sign-ins."
+      },
+      {
+        "when": [
+          {
+            "path": "account.emailVerified",
+            "test": "isFalse"
+          }
+        ],
+        "say": "{{account.emailOnFile}} has never been confirmed, so a code sent there may not arrive."
+      }
+    ],
+    "writes": [
+      {
+        "path": "account.lastOtp.sentAt",
+        "set": "now"
+      },
+      {
+        "path": "account.lastOtp.to",
+        "set": "text",
+        "text": "{{account.emailOnFile}}"
+      },
+      {
+        "path": "account.lastOtp.delivered",
+        "set": "true"
+      },
+      {
+        "path": "account.lastOtp.bounceReason",
+        "set": "null"
+      }
+    ],
+    "blockedReply": "I cannot send a code right now: {{reason}} Ask me again once that clears and I will send one."
+  },
+  {
+    "id": "send_reset_link",
+    "title": "Send a password reset link",
+    "kind": "mutating",
+    "reads": [
+      {
+        "path": "account.emailOnFile",
+        "format": "raw"
+      },
+      {
+        "path": "account.lastPasswordReset.requestedAt",
+        "format": "time"
+      },
+      {
+        "path": "account.lastPasswordReset.linkExpiresAt",
+        "format": "time"
+      }
+    ],
+    "derive": [
+      {
+        "name": "account.lastPasswordReset.linkExpiresAt",
+        "text": "one hour from now",
+        "when": [
+          {
+            "path": "account.lastPasswordReset.linkExpiresAt",
+            "test": "isEmpty"
+          }
+        ],
+        "else": "{{account.lastPasswordReset.linkExpiresAt}}"
+      }
+    ],
+    "refuse": [
+      {
+        "when": [
+          {
+            "path": "account.lastPasswordReset.completed",
+            "test": "isFalse"
+          },
+          {
+            "path": "account.lastPasswordReset.linkExpiresAt",
+            "test": "isFuture"
+          }
+        ],
+        "say": "a link already went out at {{account.lastPasswordReset.requestedAt}} and works until {{account.lastPasswordReset.linkExpiresAt}}."
+      }
+    ],
+    "writes": [
+      {
+        "path": "account.lastPasswordReset.requestedAt",
+        "set": "now"
+      },
+      {
+        "path": "account.lastPasswordReset.completed",
+        "set": "false"
+      },
+      {
+        "path": "account.lastPasswordReset.linkExpiresAt",
+        "set": "inHours",
+        "hours": 1
+      }
+    ],
+    "blockedReply": "I did not send another link: {{reason}} Use the one you have, or ask me again after it expires."
+  },
+  {
+    "id": "start_data_export",
+    "title": "Start the data export before closing an account",
+    "kind": "mutating",
+    "reads": [
+      {
+        "path": "account.org",
+        "format": "raw"
+      },
+      {
+        "path": "account.role",
+        "format": "words"
+      },
+      {
+        "path": "account.dataExport.requestedAt",
+        "format": "time"
+      },
+      {
+        "path": "account.dataExport.readyAt",
+        "format": "time"
+      },
+      {
+        "path": "account.dataExport.url",
+        "format": "raw"
+      },
+      {
+        "path": "account.deletionRequest.effectiveAt",
+        "format": "date"
+      }
+    ],
+    "derive": [],
+    "refuse": [
+      {
+        "when": [
+          {
+            "path": "account.dataExport.requestedAt",
+            "test": "isSet"
+          }
+        ],
+        "say": "one was already asked for at {{account.dataExport.requestedAt}} and is ready by {{account.dataExport.readyAt}} at {{account.dataExport.url}}."
+      },
+      {
+        "when": [
+          {
+            "path": "account.deletionRequest.effectiveAt",
+            "test": "isSet"
+          }
+        ],
+        "say": "this account is already closing, on {{account.deletionRequest.effectiveAt}}."
+      },
+      {
+        "when": [
+          {
+            "path": "account.role",
+            "test": "notEquals",
+            "value": "owner"
+          }
+        ],
+        "say": "only an owner can export an account, and your role is {{account.role}}."
+      }
+    ],
+    "writes": [
+      {
+        "path": "account.dataExport.requestedAt",
+        "set": "now"
+      },
+      {
+        "path": "account.dataExport.readyAt",
+        "set": "inHours",
+        "hours": 24
+      },
+      {
+        "path": "account.dataExport.url",
+        "set": "text",
+        "text": "/account/export/{{id}}"
+      }
+    ],
+    "blockedReply": "I did not start another export: {{reason}}"
+  }
+]

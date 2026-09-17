@@ -1,26 +1,291 @@
 @import "tailwindcss";
+@import "@xyflow/react/dist/style.css";
 
+/* Tailwind v4 finds its own sources, but it starts from this file's folder, so
+   the one folder above it holding class names has to be named. lib/ has none —
+   it is logic only, no DOM — so it is deliberately not listed. */
+@source "../components";
+
+/* The two families, self-hosted by `next/font` in app/layout.tsx, which puts
+   --next-inter and --next-geist-mono on <html>. Re-exported under these names
+   so the Tailwind theme below and `body` can both point at one place, and so
+   the fallback chain stays here rather than in the layout. */
 :root {
+  --font-inter: var(--next-inter), system-ui, sans-serif;
+  --font-geist-mono: var(--next-geist-mono), ui-monospace, monospace;
+}
+
+/* Mostly greys. The TypeSafe magenta is held back for the one thing that
+   matters most: the path a message actually took. */
+:root,
+[data-theme="light"] {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #111111;
+  --panel: #fafafa;
+  --panel-2: #f2f2f2;
+  --line: #e2e2e2;
+  --line-strong: #b8b8b8;
+  --muted: #6e6e6e;
+  --accent: #e551ba;
+  --accent-soft: #fdeef8;
+  --on-accent: #ffffff;
+  --neutral-fill: #171717;
+  --on-neutral: #ffffff;
+  --edge: #c9c9c9;
+  --good: #15803d;
+  --good-bg: #f2f7f3;
+  --warn: #8a5a00;
+  --warn-bg: #faf6ed;
+  --bad: #b42318;
+  --bad-bg: #fbf2f1;
+  --dots: #e0e0e0;
+}
+
+[data-theme="dark"] {
+  --background: #0c0c0d;
+  --foreground: #ededed;
+  --panel: #141415;
+  --panel-2: #1d1d1f;
+  --line: #2a2a2c;
+  --line-strong: #4d4d50;
+  --muted: #8f8f94;
+  --accent: #e551ba;
+  --accent-soft: #2a1524;
+  --on-accent: #0c0c0d;
+  --neutral-fill: #ededed;
+  --on-neutral: #0c0c0d;
+  --edge: #3a3a3d;
+  --good: #79c992;
+  --good-bg: #161c18;
+  --warn: #d6b46a;
+  --warn-bg: #1f1c14;
+  --bad: #e08a82;
+  --bad-bg: #211616;
+  --dots: #222224;
+}
+
+/* How long anything takes to open or shut. The side panels and the test-user
+   dropdowns share it, so the whole app moves at one speed. */
+:root {
+  --slide: 300ms;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --color-panel: var(--panel);
+  --color-panel2: var(--panel-2);
+  --color-line: var(--line);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-accentsoft: var(--accent-soft);
+  --color-linestrong: var(--line-strong);
+  --color-neutralfill: var(--neutral-fill);
+  --color-onneutral: var(--on-neutral);
+  --color-onaccent: var(--on-accent);
+  --color-good: var(--good);
+  --color-warn: var(--warn);
+  --color-bad: var(--bad);
+  --font-sans: var(--font-inter);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html,
+body {
+  height: 100%;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-inter), system-ui, sans-serif;
+  overflow: hidden;
+}
+
+/* React Flow chrome follows the theme. */
+.react-flow {
+  --xy-background-color: var(--background);
+  --xy-edge-stroke-default: var(--edge);
+  --xy-edge-stroke-selected-default: var(--line-strong);
+}
+.react-flow__handle {
+  background: var(--edge);
+  border: none;
+  width: 6px;
+  height: 6px;
+}
+.react-flow__attribution {
+  display: none;
+}
+.react-flow__controls-button,
+.react-flow__minimap {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+.react-flow__controls {
+  box-shadow: none;
+  gap: 2px;
+}
+.react-flow__controls-button {
+  fill: var(--foreground);
+  border-radius: 6px;
+}
+.react-flow__controls-button:hover {
+  background: var(--panel-2);
+}
+.react-flow__minimap-mask {
+  fill: color-mix(in srgb, var(--background) 72%, transparent);
+}
+
+/* Shared control look, so the panels stay short and readable. */
+.field {
+  width: 100%;
+  background: var(--background);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 7px 10px;
+  font-size: 13px;
+  color: var(--foreground);
+  outline: none;
+  transition: border-color 0.12s ease;
+}
+textarea.field {
+  line-height: 1.45;
+}
+.field:focus {
+  border-color: var(--line-strong);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--line-strong) 20%, transparent);
+}
+/*
+ * In a layer, so a Tailwind utility on the element can win.
+ *
+ * Everything else here is deliberately unlayered and beats the utilities. A
+ * label is the one that must not: it carries a bottom margin for the form
+ * fields it sits above, and a label in a row says `mb-0` to drop it. Unlayered,
+ * that margin survived and pushed the label half of it off centre.
+ */
+@layer components {
+  .label {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 5px;
+  }
+}
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--line);
+  background: var(--background);
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 13px;
+  color: var(--foreground);
+  cursor: pointer;
+  transition:
+    border-color 0.12s ease,
+    background 0.12s ease;
+}
+.btn:hover:not(:disabled) {
+  border-color: var(--line-strong);
+  background: var(--panel-2);
+}
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.btn-primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--on-accent);
+  font-weight: 600;
+}
+.btn-primary:hover:not(:disabled) {
+  filter: brightness(1.08);
+}
+
+/* Chat typing dots. */
+@keyframes blip {
+  0%,
+  60%,
+  100% {
+    opacity: 0.25;
+    transform: translateY(0);
+  }
+  30% {
+    opacity: 1;
+    transform: translateY(-2px);
+  }
+}
+.blip {
+  animation: blip 1.2s infinite;
+}
+
+/*
+ * The customer record changed while you were looking elsewhere.
+ *
+ * Green, because the marks inside the modal are green: one piece of news, told
+ * the same way in both places. The magenta stays reserved for the path a
+ * message took.
+ */
+.btn-changed {
+  border-color: var(--good);
+  background: var(--good-bg);
+  color: var(--good);
+  font-weight: 600;
+}
+.btn-changed:hover:not(:disabled) {
+  border-color: var(--good);
+  background: color-mix(in srgb, var(--good) 14%, var(--good-bg));
+}
+
+/* A one-shot nudge, for a count that just went up. */
+@keyframes nudge {
+  0% {
+    transform: scale(0.7);
+    opacity: 0;
+  }
+  45% {
+    transform: scale(1.14);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+.nudge {
+  animation: nudge 0.45s ease-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  .nudge {
+    animation: none;
+  }
+}
+
+/* Destructive, but not shouting: a red outline until you hover it. */
+.btn-danger-outline {
+  border-color: color-mix(in srgb, var(--bad) 55%, transparent);
+  color: var(--bad);
+}
+.btn-danger-outline:hover:not(:disabled) {
+  border-color: var(--bad);
+  background: var(--bad-bg);
+}
+
+.btn-danger {
+  background: var(--bad);
+  border-color: var(--bad);
+  color: var(--background);
+  font-weight: 600;
+}
+.btn-danger:hover:not(:disabled) {
+  filter: brightness(1.06);
+  background: var(--bad);
+  border-color: var(--bad);
 }

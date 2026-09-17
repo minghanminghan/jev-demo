@@ -1,0 +1,172 @@
+{
+  "id": "test",
+  "signedInAs": "andrewjiang6789@gmail.com",
+  "account": {
+    "name": "Andrew Jiang",
+    "emailOnFile": "andrewjiang6789@gmail.com",
+    "emailVerified": true,
+    "org": "test",
+    "role": "owner",
+    "seatsUsed": 7,
+    "createdAt": "2023-04-11",
+    "mfa": {
+      "enabled": true,
+      "method": "authenticator_app",
+      "backupCodesLeft": 0
+    },
+    "sso": {
+      "enabled": false,
+      "provider": null
+    },
+    "notifications": {
+      "productUpdates": true,
+      "billingAlerts": true,
+      "weeklyDigest": false
+    },
+    "lastSignInAt": "2026-09-14T08:12:00Z",
+    "lastSignInIp": "192.168.1.1",
+    "failedSignIns": 1,
+    "lockedOut": false,
+    "lockedReason": null,
+    "lockExpiresAt": null,
+    "lastOtp": {
+      "sentAt": "2026-09-17T18:58:00Z",
+      "to": "andrewjiang6789@gmail.com",
+      "delivered": false,
+      "bounceReason": "greylisted_by_recipient_server"
+    },
+    "lastPasswordReset": {
+      "requestedAt": "2026-09-16T18:31:00Z",
+      "completed": false,
+      "linkExpiresAt": "2026-09-16T19:31:00Z"
+    },
+    "deletionRequest": null,
+    "dataExport": null
+  },
+  "subscription": {
+    "plan": "Team",
+    "planTier": 2,
+    "status": "past_due",
+    "billingPeriod": "monthly",
+    "seats": 10,
+    "pricePerSeat": 18,
+    "currency": "USD",
+    "monthlyTotal": 180,
+    "autoRenew": true,
+    "renewsOn": "2026-10-01",
+    "startedOn": "2023-04-11",
+    "contract": {
+      "type": "self_serve",
+      "annualCommitment": false,
+      "endsOn": null
+    },
+    "availablePlans": [
+      {
+        "name": "Starter",
+        "tier": 1,
+        "pricePerSeat": 9,
+        "seatCap": 5
+      },
+      {
+        "name": "Team",
+        "tier": 2,
+        "pricePerSeat": 18,
+        "seatCap": 50
+      },
+      {
+        "name": "Business",
+        "tier": 3,
+        "pricePerSeat": 32,
+        "seatCap": null
+      }
+    ],
+    "paymentMethod": {
+      "type": "card",
+      "brand": "Visa",
+      "last4": "0000",
+      "expires": "08/2028",
+      "expired": false
+    },
+    "invoices": [
+      {
+        "id": "INV-2026-0912",
+        "date": "2026-09-01",
+        "amount": 180,
+        "status": "failed",
+        "failureReason": "card_expired",
+        "attempts": 2,
+        "nextRetryAt": "2026-09-19T06:00:00Z",
+        "retryable": true
+      },
+      {
+        "id": "INV-2026-0811",
+        "date": "2026-08-01",
+        "amount": 180,
+        "status": "paid",
+        "paidAt": "2026-08-01"
+      },
+      {
+        "id": "INV-2026-0710",
+        "date": "2026-07-01",
+        "amount": 360,
+        "status": "paid",
+        "paidAt": "2026-07-01",
+        "note": "Charged twice in July; one charge is still under review."
+      }
+    ],
+    "billingDetails": {
+      "companyName": "Test",
+      "taxId": "US-88-3910442",
+      "country": "US"
+    },
+    "openDispute": {
+      "id": "DIS-119",
+      "about": "INV-2026-0710",
+      "reason": "double_charge",
+      "amount": 180,
+      "openedAt": "2026-07-03",
+      "status": "with_billing_team"
+    },
+    "refunds": []
+  },
+  "technical": {
+    "browser": "Chrome 141 on macOS 26",
+    "sdk": "@test/sdk 3.2.1",
+    "sdkLatest": "3.4.0",
+    "apiKeyPrefix": "sk_abcd",
+    "region": "us-east-1",
+    "lastError": {
+      "at": "2026-09-17T18:20:00Z",
+      "code": "SYNC_STALLED",
+      "message": "Workspace sync has not advanced for 42 minutes",
+      "requestId": "req_0f91ac33"
+    },
+    "openTickets": [
+      {
+        "id": "BUG-4471",
+        "title": "CSV upload fails over 5 MB",
+        "status": "with_engineering",
+        "openedAt": "2026-09-09"
+      }
+    ],
+    "knownIncident": {
+      "id": "INC-233",
+      "title": "Delayed workspace sync in us-east-1",
+      "status": "monitoring",
+      "startedAt": "2026-09-17T17:05:00Z",
+      "affectsThisUser": true
+    },
+    "syncStatus": "stalled",
+    "storageUsedGb": 41.6,
+    "storageLimitGb": 50,
+    "sdkVersion": "3.2.1"
+  },
+  "history": {
+    "priorChats": 3,
+    "lastChatAt": "2026-09-15T11:02:00Z",
+    "lastChatTopic": "payment_problem",
+    "everEscalated": true,
+    "lastEscalationAt": "2026-07-03T09:40:00Z",
+    "satisfactionLastRating": 2
+  }
+}
