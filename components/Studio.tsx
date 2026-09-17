@@ -34,7 +34,7 @@ const STALE_STORES = ["jev-api-key", "jev-config", "jev-user"];
  * carries its slots, their live values and the automation read-out underneath.
  * So it widens when a node is selected and narrows again when nothing is.
  */
-const INSPECTOR_WIDTH = 300;
+const INSPECTOR_WIDTH = 260;
 const INSPECTOR_FOCUS_WIDTH = 440;
 const CHAT_WIDTH = 500;
 
@@ -134,6 +134,29 @@ export default function Studio({
   function select(id: string | null) {
     setSelectedId(id);
     if (id) setShowInspector(true);
+  }
+
+  /**
+   * Clicking empty canvas drops the node, which is also a click away from the
+   * panel, so the panel goes with it. The alternative — leaving it open on the
+   * list — parks a column of tree next to a canvas you just asked to see.
+   *
+   * This is only the canvas. `All nodes` inside the panel is navigation within
+   * it, so that one stays open and lands on the list.
+   */
+  function selectFromCanvas(id: string | null) {
+    select(id);
+    if (!id) setShowInspector(false);
+  }
+
+  /**
+   * Hiding the node panel drops the selection, so it always comes back at its
+   * narrow list width rather than reopening on the form of a node you stopped
+   * looking at. Clicking a node opens the panel again and widens it.
+   */
+  function toggleInspector() {
+    if (showInspector) setSelectedId(null);
+    setShowInspector(!showInspector);
   }
 
   /**
@@ -263,7 +286,7 @@ export default function Studio({
           <PanelToggle
             side="left"
             open={showInspector}
-            onClick={() => setShowInspector(!showInspector)}
+            onClick={toggleInspector}
           />
         </aside>
 
@@ -277,7 +300,7 @@ export default function Studio({
               // back to the top beats routing from an id that is no longer there.
               startAt={startNode ? startAt : null}
               selectedId={selectedId}
-              onSelect={select}
+              onSelect={selectFromCanvas}
             />
           </Suspense>
         </main>
